@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PythonX - Live Profile</title>
+    <title>Introduction</title>
     <style>
         :root {
             --bg-color: #000;
@@ -134,7 +134,7 @@
         <div class="screen-content">
             <div id="type-title-3" class="type-title"></div>
             <div id="type-desc-3" class="type-desc"></div>
-            <button class="follow-btn" id="follow-trigger">FOLLOW NOW</button>
+            <button class="follow-btn" id="follow-trigger">FOLLOW</button>
         </div>
     </div>
 </div>
@@ -162,8 +162,8 @@
     async function startFlow() {
         setTimeout(async () => {
             document.getElementById('master-container').style.transform = 'translateY(-100vh)';
-            await typeWriter(`Hey, I'm ${fetchedUsername}`, "type-title-2", 50);
-            await typeWriter(`Join a community of Python enthusiasts. Master automation, logic, and coding patterns with me.`, "type-desc-2", 30);
+            await typeWriter(`Hey, I'm python developer`, "type-title-2", 50);
+            await typeWriter(`Join my community of Python developers. Master automation, logic, and coding patterns with me.`, "type-desc-2", 30);
             
             setTimeout(async () => {
                 document.getElementById('master-container').style.transform = 'translateY(-200vh)';
