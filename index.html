@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Introduction to me</title>
+    <title>PythonX - Live Profile</title>
     <style>
         :root {
             --bg-color: #000;
@@ -34,11 +34,11 @@
             position: relative;
         }
 
-        /* Matrix Background (Screen 3 Only) */
+        /* Matrix Canvas - Sirf Screen 3 ke liye */
         #matrix-canvas {
             position: absolute; top: 0; left: 0;
             width: 100%; height: 100%;
-            z-index: 0; opacity: 0.4;
+            z-index: 0; opacity: 0.35;
         }
 
         .screen-content { position: relative; z-index: 10; width: 100%; display: flex; flex-direction: column; align-items: center; }
@@ -54,37 +54,37 @@
 
         .profile-header {
             display: flex; 
-            align-items: center; /* Vertically center photo and stats */
+            align-items: center; 
             justify-content: flex-start;
             width: 100%;
             margin-bottom: 15px;
         }
 
         .profile-pic-ring { 
-            width: 90px; height: 90px; /* Thoda adjust for side-by-side */
+            width: 90px; height: 90px; 
             border-radius: 50%; padding: 3px; 
             background: linear-gradient(45deg, #f09433, #dc2743, #bc1888); 
             display: flex; justify-content: center; align-items: center;
-            flex-shrink: 0; /* Photo choti na ho */
+            flex-shrink: 0;
         }
         .profile-pic { width: 94%; height: 94%; background-color: #111; border-radius: 50%; overflow: hidden; border: 2px solid #000; }
         .profile-pic img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* Stats on Right Side */
         .stats-container {
             display: flex; 
             justify-content: space-around; 
             flex-grow: 1; 
-            margin-left: 20px; /* Space from photo to stats */
+            margin-left: 15px;
         }
         .stat-item { text-align: center; }
         .stat-val { display: block; font-weight: bold; font-size: 1.1rem; }
-        .stat-label { font-size: 0.75rem; color: #a8a8a8; }
+        .stat-label { font-size: 0.7rem; color: #a8a8a8; text-transform: capitalize; }
 
         .bio-section { 
             font-size: 0.9rem; line-height: 1.4; 
             text-align: left; width: 100%; 
-            margin-top: 5px; border: none; 
+            margin-top: 5px; border: none;
+            white-space: pre-wrap; 
         }
 
         /* --- TEXT SCREENS --- */
@@ -107,20 +107,18 @@
     <!-- SCREEN 1 -->
     <div class="screen">
         <div class="content-limit">
-            <span class="top-bar" id="display-username">Loading...</span>
+            <span class="top-bar" id="display-username">SYNCING...</span>
             <div class="profile-header">
-                <!-- Photo on Left -->
                 <div class="profile-pic-ring">
                     <div class="profile-pic"><img id="display-pfp" src=""></div>
                 </div>
-                <!-- Stats on Right -->
                 <div class="stats-container">
                     <div class="stat-item"><span class="stat-val" id="posts">0</span><span class="stat-label">Posts</span></div>
                     <div class="stat-item"><span class="stat-val" id="followers">0</span><span class="stat-label">Followers</span></div>
                     <div class="stat-item"><span class="stat-val" id="following">0</span><span class="stat-label">Following</span></div>
                 </div>
             </div>
-            <div class="bio-section" id="display-bio">Loading bio data...</div>
+            <div class="bio-section" id="display-bio">Loading data...</div>
         </div>
     </div>
 
@@ -136,7 +134,7 @@
         <div class="screen-content">
             <div id="type-title-3" class="type-title"></div>
             <div id="type-desc-3" class="type-desc"></div>
-            <button class="follow-btn" id="follow-trigger">FOLLOW</button>
+            <button class="follow-btn" id="follow-trigger">FOLLOW NOW</button>
         </div>
     </div>
 </div>
@@ -164,8 +162,8 @@
     async function startFlow() {
         setTimeout(async () => {
             document.getElementById('master-container').style.transform = 'translateY(-100vh)';
-            await typeWriter(`Hey, I'm python developer`, "type-title-2", 50);
-            await typeWriter(`Join a community of Python developers. Master automation, logic, and coding patterns with us.`, "type-desc-2", 30);
+            await typeWriter(`Hey, I'm ${fetchedUsername}`, "type-title-2", 50);
+            await typeWriter(`Join a community of Python enthusiasts. Master automation, logic, and coding patterns with me.`, "type-desc-2", 30);
             
             setTimeout(async () => {
                 document.getElementById('master-container').style.transform = 'translateY(-200vh)';
@@ -187,28 +185,20 @@
                 fetchedUsername = d[3].trim();
                 document.getElementById('display-username').innerText = fetchedUsername;
                 document.getElementById('display-bio').innerText = d[5].trim().replace(/;/g, '\n');
-                document.getElementById('display-pfp').src = `https://lh3.googleusercontent.com/u/0/d/1kNtD5Z7u4-Z2izscx5hfuwg0ajrHmRHb`;
+                
+                // Image ID Logic
+                let id = d[6].trim();
+                if(id.includes('/d/')) id = id.split('/d/')[1].split('/')[0];
+                document.getElementById('display-pfp').src = `https://lh3.googleusercontent.com/u/0/d/${id}`;
 
-                animateValue("posts", parseInt(d[0]), 1500);
-                animateValue("followers", parseInt(d[1]), 1500, true);
-                animateValue("following", parseInt(d[2]), 1500);
+                document.getElementById('posts').innerText = d[0].trim();
+                let fCount = parseInt(d[1].trim());
+                document.getElementById('followers').innerText = formatK(fCount);
+                document.getElementById('following').innerText = d[2].trim();
+                
                 startFlow();
             }
         } catch (e) { console.error("Sync Error"); }
-    }
-
-    function animateValue(id, end, duration, isFollower = false) {
-        const obj = document.getElementById(id);
-        let start = null;
-        const step = (ts) => {
-            if (!start) start = ts;
-            const progress = Math.min((ts - start) / duration, 1);
-            let val = Math.floor(progress * end);
-            obj.innerHTML = isFollower ? formatK(val) : val;
-            if (progress < 1) window.requestAnimationFrame(step);
-            else obj.innerHTML = isFollower ? formatK(end) : end;
-        };
-        window.requestAnimationFrame(step);
     }
 
     function initMatrix() {
