@@ -34,7 +34,6 @@
             position: relative;
         }
 
-        /* Matrix Canvas - Sirf Screen 3 ke liye */
         #matrix-canvas {
             position: absolute; top: 0; left: 0;
             width: 100%; height: 100%;
@@ -43,7 +42,7 @@
 
         .screen-content { position: relative; z-index: 10; width: 100%; display: flex; flex-direction: column; align-items: center; }
 
-        /* --- SCREEN 1: PROFILE SIDE-BY-SIDE --- */
+        /* --- SCREEN 1: PROFILE --- */
         .content-limit { width: 95%; max-width: 400px; text-align: left; }
         
         .top-bar { 
@@ -66,9 +65,10 @@
             background: linear-gradient(45deg, #f09433, #dc2743, #bc1888); 
             display: flex; justify-content: center; align-items: center;
             flex-shrink: 0;
+            transition: transform 0.5s ease;
         }
         .profile-pic { width: 94%; height: 94%; background-color: #111; border-radius: 50%; overflow: hidden; border: 2px solid #000; }
-        .profile-pic img { width: 100%; height: 100%; object-fit: cover; }
+        .profile-pic img { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1s ease; }
 
         .stats-container {
             display: flex; 
@@ -83,8 +83,10 @@
         .bio-section { 
             font-size: 0.9rem; line-height: 1.4; 
             text-align: left; width: 100%; 
-            margin-top: 5px; border: none;
+            margin-top: 5px;
             white-space: pre-wrap; 
+            opacity: 0; transform: translateY(10px);
+            transition: all 0.8s ease 0.5s;
         }
 
         /* --- TEXT SCREENS --- */
@@ -107,7 +109,7 @@
     <!-- SCREEN 1 -->
     <div class="screen">
         <div class="content-limit">
-            <span class="top-bar" id="display-username">SYNCING...</span>
+            <span class="top-bar" id="display-username">loading...</span>
             <div class="profile-header">
                 <div class="profile-pic-ring">
                     <div class="profile-pic"><img id="display-pfp" src=""></div>
@@ -118,7 +120,7 @@
                     <div class="stat-item"><span class="stat-val" id="following">0</span><span class="stat-label">Following</span></div>
                 </div>
             </div>
-            <div class="bio-section" id="display-bio">Loading data...</div>
+            <div class="bio-section" id="display-bio">...</div>
         </div>
     </div>
 
@@ -143,7 +145,20 @@
     const sheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQgk9L2oBNQWT7ajQ1ndllegly4_W5cNeEid4CCfVR4mMrImdy2DYeXaqqCoOrARia0ia3-A5nwJcj1/pub?gid=1993999992&single=true&output=csv';
     let fetchedUsername = "";
 
-    function formatK(num) { return num >= 1000 ? (num / 1000).toFixed(1) + 'k' : num; }
+    // Stats counter animation
+    function animateValue(id, start, end, duration) {
+        let obj = document.getElementById(id);
+        let range = end - start;
+        let current = start;
+        let increment = end > start ? 1 : -1;
+        let stepTime = Math.abs(Math.floor(duration / range));
+        if (range === 0) { obj.innerText = end; return; }
+        let timer = setInterval(function() {
+            current += increment;
+            obj.innerText = (current >= 1000) ? (current/1000).toFixed(1) + 'k' : current;
+            if (current == end) clearInterval(timer);
+        }, stepTime || 10);
+    }
 
     async function typeWriter(text, elementId, speed = 40) {
         let i = 0;
@@ -160,19 +175,24 @@
     }
 
     async function startFlow() {
+        // Screen 1 Transitions
+        document.getElementById('display-pfp').style.opacity = "1";
+        document.getElementById('display-bio').style.opacity = "1";
+        document.getElementById('display-bio').style.transform = "translateY(0)";
+
         setTimeout(async () => {
             document.getElementById('master-container').style.transform = 'translateY(-100vh)';
-            await typeWriter(`Hey, I'm python developer`, "type-title-2", 50);
-            await typeWriter(`Join my community of Python developers. Master automation, logic, and coding patterns with me.`, "type-desc-2", 30);
+            await typeWriter(`Hey, I'm a Python Developer`, "type-title-2", 50);
+            await typeWriter(`Join my community of python developers. Master automation, logic, and coding patterns with me.`, "type-desc-2", 30);
             
             setTimeout(async () => {
                 document.getElementById('master-container').style.transform = 'translateY(-200vh)';
                 initMatrix();
-                await typeWriter(`Become a Pro`, "type-title-3", 50);
+                await typeWriter(`If you want to become a professional Python developer`, "type-title-3", 50);
                 await typeWriter(`The journey to professional Python development starts here. Tap follow to stay updated!`, "type-desc-3", 30);
                 document.getElementById('follow-trigger').style.display = "block";
             }, 3000);
-        }, 4000);
+        }, 4500); // 4.5 seconds ruk kar screen move karegi
     }
 
     async function fetchData() {
@@ -183,18 +203,20 @@
             if (rows.length > 1) {
                 const d = rows[1];
                 fetchedUsername = d[3].trim();
+                
+                // Set initial text
                 document.getElementById('display-username').innerText = fetchedUsername;
                 document.getElementById('display-bio').innerText = d[5].trim().replace(/;/g, '\n');
                 
-                // Image ID Logic
+                // Image ID
                 let id = d[6].trim();
                 if(id.includes('/d/')) id = id.split('/d/')[1].split('/')[0];
                 document.getElementById('display-pfp').src = `https://lh3.googleusercontent.com/u/0/d/${id}`;
 
-                document.getElementById('posts').innerText = d[0].trim();
-                let fCount = parseInt(d[1].trim());
-                document.getElementById('followers').innerText = formatK(fCount);
-                document.getElementById('following').innerText = d[2].trim();
+                // Trigger stats animation
+                animateValue("posts", 0, parseInt(d[0].trim()), 1500);
+                animateValue("followers", 0, parseInt(d[1].trim()), 1500);
+                animateValue("following", 0, parseInt(d[2].trim()), 1500);
                 
                 startFlow();
             }
