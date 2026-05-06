@@ -42,7 +42,6 @@
 
         .screen-content { position: relative; z-index: 10; width: 100%; display: flex; flex-direction: column; align-items: center; }
 
-        /* --- SCREEN 1: PROFILE --- */
         .content-limit { width: 95%; max-width: 400px; text-align: left; }
         
         .top-bar { 
@@ -70,11 +69,28 @@
         .profile-pic { width: 94%; height: 94%; background-color: #111; border-radius: 50%; overflow: hidden; border: 2px solid #000; }
         .profile-pic img { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1s ease; }
 
+        /* New styles for the Name and Stats column */
+        .profile-info-col {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            flex-grow: 1;
+            margin-left: 15px;
+        }
+
+        .display-name {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 8px;
+            opacity: 1;
+            transform: translateY(5px);
+            transition: all 0.8s ease 0.3s;
+        }
+
         .stats-container {
             display: flex; 
             justify-content: space-around; 
-            flex-grow: 1; 
-            margin-left: 15px;
+            width: 100%;
         }
         .stat-item { text-align: center; }
         .stat-val { display: block; font-weight: bold; font-size: 1.1rem; }
@@ -89,7 +105,6 @@
             transition: all 0.8s ease 0.5s;
         }
 
-        /* --- TEXT SCREENS --- */
         .text-screen { padding: 12% 10%; align-items: flex-start; text-align: left; }
         .type-title { font-size: 1.8rem; font-weight: 800; margin-bottom: 15px; color: var(--python-yellow); min-height: 1.2em; }
         .type-desc { font-size: 1.1rem; color: #eee; line-height: 1.5; min-height: 5em; }
@@ -106,7 +121,6 @@
 <body>
 
 <div id="master-container">
-    <!-- SCREEN 1 -->
     <div class="screen">
         <div class="content-limit">
             <span class="top-bar" id="display-username">loading...</span>
@@ -114,23 +128,25 @@
                 <div class="profile-pic-ring">
                     <div class="profile-pic"><img id="display-pfp" src=""></div>
                 </div>
-                <div class="stats-container">
-                    <div class="stat-item"><span class="stat-val" id="posts">0</span><span class="stat-label">Posts</span></div>
-                    <div class="stat-item"><span class="stat-val" id="followers">0</span><span class="stat-label">Followers</span></div>
-                    <div class="stat-item"><span class="stat-val" id="following">0</span><span class="stat-label">Following</span></div>
+                <div class="profile-info-col">
+                    <!-- Name added here -->
+                    <div class="display-name" id="display-name">python</div>
+                    <div class="stats-container">
+                        <div class="stat-item"><span class="stat-val" id="posts">0</span><span class="stat-label">Posts</span></div>
+                        <div class="stat-item"><span class="stat-val" id="followers">0</span><span class="stat-label">Followers</span></div>
+                        <div class="stat-item"><span class="stat-val" id="following">0</span><span class="stat-label">Following</span></div>
+                    </div>
                 </div>
             </div>
             <div class="bio-section" id="display-bio">...</div>
         </div>
     </div>
 
-    <!-- SCREEN 2 -->
     <div class="screen text-screen">
         <div id="type-title-2" class="type-title"></div>
         <div id="type-desc-2" class="type-desc"></div>
     </div>
 
-    <!-- SCREEN 3 -->
     <div class="screen text-screen">
         <canvas id="matrix-canvas"></canvas>
         <div class="screen-content">
@@ -145,7 +161,6 @@
     const sheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQgk9L2oBNQWT7ajQ1ndllegly4_W5cNeEid4CCfVR4mMrImdy2DYeXaqqCoOrARia0ia3-A5nwJcj1/pub?gid=1993999992&single=true&output=csv';
     let fetchedUsername = "";
 
-    // Stats counter animation
     function animateValue(id, start, end, duration) {
         let obj = document.getElementById(id);
         let range = end - start;
@@ -175,10 +190,12 @@
     }
 
     async function startFlow() {
-        // Screen 1 Transitions
         document.getElementById('display-pfp').style.opacity = "1";
         document.getElementById('display-bio').style.opacity = "1";
         document.getElementById('display-bio').style.transform = "translateY(0)";
+        // Animate Name In
+        document.getElementById('display-name').style.opacity = "1";
+        document.getElementById('display-name').style.transform = "translateY(0)";
 
         setTimeout(async () => {
             document.getElementById('master-container').style.transform = 'translateY(-100vh)';
@@ -192,7 +209,7 @@
                 await typeWriter(`The journey to professional Python development starts here. Tap follow to stay updated!`, "type-desc-3", 30);
                 document.getElementById('follow-trigger').style.display = "block";
             }, 3000);
-        }, 4500); // 4.5 seconds ruk kar screen move karegi
+        }, 2500); 
     }
 
     async function fetchData() {
@@ -202,18 +219,16 @@
             const rows = csv.split('\n').map(r => r.split(','));
             if (rows.length > 1) {
                 const d = rows[1];
-                fetchedUsername = d[3].trim();
+                fetchedUsername = d[3].trim(); // D2 (Username)
                 
-                // Set initial text
                 document.getElementById('display-username').innerText = fetchedUsername;
+                document.getElementById('display-name').innerText = d[4].trim(); // E2 (Name)
                 document.getElementById('display-bio').innerText = d[5].trim().replace(/;/g, '\n');
                 
-                // Image ID
                 let id = d[6].trim();
                 if(id.includes('/d/')) id = id.split('/d/')[1].split('/')[0];
                 document.getElementById('display-pfp').src = `https://lh3.googleusercontent.com/u/0/d/${id}`;
 
-                // Trigger stats animation
                 animateValue("posts", 0, parseInt(d[0].trim()), 1500);
                 animateValue("followers", 0, parseInt(d[1].trim()), 1500);
                 animateValue("following", 0, parseInt(d[2].trim()), 1500);
@@ -244,8 +259,18 @@
         setInterval(draw, 33);
     }
 
-    document.getElementById('follow-trigger').onclick = () => {
-        window.open(`https://instagram.com/${fetchedUsername}`, '_blank');
+    document.getElementById('follow-trigger').onclick = (e) => {
+        e.preventDefault();
+        const username = fetchedUsername;
+        const appUrl = `instagram://user?username=${username}`;
+        const webUrl = `https://www.instagram.com/${username}/`;
+        window.location.href = appUrl;
+        const fallback = setTimeout(() => {
+            window.location.href = webUrl;
+        }, 500);
+        window.onblur = () => {
+            clearTimeout(fallback);
+        };
     };
 
     window.onload = fetchData;
